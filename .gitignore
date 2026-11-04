@@ -1,0 +1,23 @@
+# Local planning and event files (kept out of the public repo)
+PLAN.md
+PROJECT_STATE.md
+HACK_EVENT_GATE.json
+SOURCES.md
+*.ics
+
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Run outputs live on Hugging Face, not in git
+runs/
+*.jsonl
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+*.egg-info/
+.pytest_cache/
+.ipynb_checkpoints/
