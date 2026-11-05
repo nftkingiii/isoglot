@@ -11,6 +11,7 @@ import os
 import platform
 import time
 from pathlib import Path
+from typing import Callable
 
 import auditkit as ak
 
@@ -19,11 +20,62 @@ from . import __version__
 
 def generate(samples: list[ak.Sample], model_id: str, *, max_tokens: int = 512,
              seed: int = 0, batch_size: int = 1, hf_token: str | None = None,
-             **model_opts) -> list[ak.Sample]:
+             model=None, **model_opts) -> list[ak.Sample]:
+    """Answer samples. Pass an already-loaded ``model`` to avoid reloading it."""
     config = ak.RunConfig(temperature=0.0, max_tokens=max_tokens, seed=seed)
-    model = hf_model(model_id, batch_size=batch_size,
-                     hf_token=hf_token or os.environ.get("HF_TOKEN"), **model_opts)
+    if model is None:
+        model = hf_model(model_id, batch_size=batch_size,
+                         hf_token=hf_token or os.environ.get("HF_TOKEN"), **model_opts)
     return ak.generate(samples, model=model, config=config)
+
+
+def run_chunks(model, model_id: str, out_dir: Path, *, sets, langs, variant: str,
+               max_tokens: int = 512, seed: int = 0,
+               fetch: Callable[[Path], None] | None = None,
+               publish: Callable[[Path], None] | None = None,
+               log: Callable[[str], None] = print) -> Path:
+    """Generate one (set, lang) chunk at a time and save each as soon as it is done.
+
+    A chunk whose file already holds every answer is skipped, so a run that
+    dies part-way can be restarted. ``fetch`` may restore a chunk from remote
+    storage before the check; ``publish`` uploads each finished chunk.
+    Returns the merged answers file.
+    """
+    from .data import load_tukabench
+
+    chunk_paths = []
+    for set_name in sets:
+        for lang in langs:
+            path = out_dir / variant / set_name / f"{lang}.jsonl"
+            chunk_paths.append(path)
+            samples = load_tukabench([set_name], [lang])
+            if fetch and not path.exists():
+                fetch(path)
+            if _count_lines(path) == len(samples):
+                log(f"skip {set_name}/{lang}: already done")
+                continue
+            t0 = time.time()
+            answers = generate(samples, model_id, max_tokens=max_tokens, seed=seed, model=model)
+            save_answers(answers, path, model_id=model_id, variant=variant,
+                         max_tokens=max_tokens, seed=seed)
+            empty = sum(not (s.actual_output or "").strip() for s in answers)
+            log(f"done {set_name}/{lang}: {len(answers)} answers, {empty} empty, "
+                f"{(time.time() - t0) / 60:.1f} min")
+            if publish:
+                publish(path)
+
+    merged = out_dir / variant / "answers.jsonl"
+    with open(merged, "w", encoding="utf-8") as out:
+        for path in chunk_paths:
+            out.write(path.read_text(encoding="utf-8"))
+    return merged
+
+
+def _count_lines(path: Path) -> int:
+    if not path.exists():
+        return 0
+    with open(path, encoding="utf-8") as f:
+        return sum(1 for line in f if line.strip())
 
 
 def hf_model(model_id: str, *, batch_size: int = 1, **opts):

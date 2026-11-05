@@ -104,5 +104,36 @@ def test_save_load_roundtrip(tmp_path):
     assert back[0].metadata["variant"] == "base" and back[0].actual_output == "no"
 
 
+def test_run_chunks_resumes(tmp_path, monkeypatch):
+    import isoglot.data as data
+    import isoglot.generate as gen
+
+    def fake_load(sets, langs, **kw):
+        return to_samples([{"Index": str(i), "Goal": f"g{i}", "Goal_Translation": f"p{i}"}
+                           for i in range(3)], sets[0], langs[0])
+
+    calls = []
+
+    def fake_generate(samples, model_id, **kw):
+        calls.append(samples[0].task)
+        return [s.__class__(**{**s.__dict__, "actual_output": "ok"}) for s in samples]
+
+    monkeypatch.setattr(data, "load_tukabench", fake_load)
+    monkeypatch.setattr(gen, "generate", fake_generate)
+    published = []
+    kw = dict(sets=["afri-jbb-harm"], langs=["eng", "hau"], variant="base",
+              publish=published.append, log=lambda m: None)
+
+    merged = gen.run_chunks(None, "m", tmp_path, **kw)
+    assert calls == ["afri-jbb-harm:eng", "afri-jbb-harm:hau"] and len(published) == 2
+    assert len(merged.read_text(encoding="utf-8").splitlines()) == 6
+
+    # a half-written chunk is redone; a complete one is skipped
+    (tmp_path / "base/afri-jbb-harm/hau.jsonl").write_text("{}\n", encoding="utf-8")
+    calls.clear()
+    gen.run_chunks(None, "m", tmp_path, **kw)
+    assert calls == ["afri-jbb-harm:hau"]
+
+
 def test_labels_constant():
     assert LABELS == ("Jailbroken", "Refused", "Deflected")
