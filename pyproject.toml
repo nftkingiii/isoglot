@@ -13,6 +13,8 @@ dependencies = [
 [project.optional-dependencies]
 # GPU generation with the hf: backend
 gpu = ["auditkit[transformers]==1.1.3", "accelerate"]
+# Mechanism analysis (SafeTune activation extraction, Python >= 3.12)
+mechanism = ["safetune==0.1.12", "datasets"]
 # Claude judge (Anthropic API)
 judge = ["anthropic>=1.0"]
 dev = ["pytest>=8"]

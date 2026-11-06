@@ -22,11 +22,13 @@ Work in progress. What exists today:
 - [x] Baseline answers generated: 1,200 Tiny Aya answers, 0 empty (Kaggle T4, 82 min)
 - [x] Per-language report: attack success rate, refusal, deflection, over-refusal, RCD,
       bootstrap intervals
-- [ ] Baseline judged results for Tiny Aya
-- [ ] Locating refusal per language (CircuitKIT, SafeTune)
+- [x] Baseline judged (Claude Sonnet 5.5, $4.01): refusals lost in Hausa, Yoruba and Igbo mostly
+      become confused answers, not harmful ones (results table in the HF article, coming)
+- [ ] Locating refusal per language: [`notebooks/03_mechanism.ipynb`](notebooks/03_mechanism.ipynb)
+      (SafeTune activation extraction; English refusal direction from BeaverTails vs Alpaca)
 - [ ] Repairs and before/after results
 
-No results are claimed yet.
+Numbers are reported only once their run and judge are recorded.
 
 ## Run
 
