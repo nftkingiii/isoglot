@@ -27,8 +27,8 @@ def main(argv=None) -> None:
 
     j = sub.add_parser("judge", help="label saved answers (calls the judge endpoint)")
     j.add_argument("answers", type=Path)
-    j.add_argument("--judge-model", required=True)
-    j.add_argument("--base-url")
+    j.add_argument("--judge-model", default="claude-sonnet-5-5")
+    j.add_argument("--cap", type=float, required=True, help="hard spend cap in USD")
     j.add_argument("--out", type=Path, required=True)
 
     r = sub.add_parser("report", help="per-language table from judged rows")
@@ -46,10 +46,12 @@ def main(argv=None) -> None:
                            max_tokens=a.max_tokens, seed=a.seed))
     elif a.cmd == "judge":
         from .generate import load_answers
-        from .judge import TukaJudge, judge_answers, openai_client
+        from .judge import CLAUDE_PRICES, SpendMeter, TukaJudge, anthropic_client, judge_answers
 
-        judge = TukaJudge(openai_client(a.judge_model, a.base_url), a.judge_model)
+        meter = SpendMeter(a.cap, *CLAUDE_PRICES[a.judge_model])
+        judge = TukaJudge(anthropic_client(a.judge_model, meter), a.judge_model)
         rows = judge_answers(load_answers(a.answers), judge)
+        print(f"spent ${meter.spent_usd:.2f} over {meter.calls} calls")
         a.out.parent.mkdir(parents=True, exist_ok=True)
         with open(a.out, "w", encoding="utf-8") as f:
             for row in rows:

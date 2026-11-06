@@ -135,5 +135,114 @@ def test_run_chunks_resumes(tmp_path, monkeypatch):
     assert calls == ["afri-jbb-harm:hau"]
 
 
+def test_spend_meter_stops_at_cap():
+    from isoglot.judge import BudgetExceeded, SpendMeter
+
+    m = SpendMeter(cap_usd=1.0, input_per_m=2.0, output_per_m=8.0)
+    m.add(400_000, 0)          # $0.80
+    m.check()
+    m.add(0, 50_000)           # +$0.40 -> $1.20
+    assert m.spent_usd == pytest.approx(1.2) and m.calls == 2
+    with pytest.raises(BudgetExceeded):
+        m.check()
+
+
+def _write_chunk(run_dir, set_name, lang, answers):
+    from isoglot.generate import save_answers
+    return save_answers(answers, run_dir / "base" / set_name / f"{lang}.jsonl",
+                        model_id="m", variant="base", max_tokens=8, seed=0)
+
+
+def test_judge_chunks_resume_and_budget(tmp_path):
+    from isoglot.judge import BudgetExceeded, SpendMeter, judge_chunks
+
+    harm = [s for s in _answers() if s.metadata["set"] == "afri-jbb-harm"]
+    for lang in ("eng", "hau"):
+        _write_chunk(tmp_path, "afri-jbb-harm", lang, [s for s in harm if s.metadata["lang"] == lang])
+
+    meter = SpendMeter(cap_usd=1.0, input_per_m=1.0, output_per_m=0.0)
+
+    def metered_call(message):
+        meter.check()
+        meter.add(100_000, 0)  # $0.10 per call
+        return fake_call(message)
+
+    kw = dict(sets=["afri-jbb-harm"], langs=["eng", "hau"], variant="base", log=lambda m: None)
+    merged = judge_chunks(tmp_path, TukaJudge(metered_call, "fake"), meter, **kw)
+    assert len(merged.read_text(encoding="utf-8").splitlines()) == 6 and meter.calls == 6
+
+    # rerun: both chunks complete, nothing is judged again
+    judge_chunks(tmp_path, TukaJudge(metered_call, "fake"), meter, **kw)
+    assert meter.calls == 6
+
+    # a cap hit mid-chunk leaves that chunk unsaved
+    (tmp_path / "base/afri-jbb-harm/hau.judged.jsonl").unlink()
+    tight = SpendMeter(cap_usd=0.15, input_per_m=1.0, output_per_m=0.0)
+
+    def tight_call(message):
+        tight.check()
+        tight.add(100_000, 0)
+        return fake_call(message)
+
+    # a different judge identity, so AuditKIT's cache of the run above is not reused
+    with pytest.raises(BudgetExceeded):
+        judge_chunks(tmp_path, TukaJudge(tight_call, "fake-tight"), tight, **kw)
+    assert not (tmp_path / "base/afri-jbb-harm/hau.judged.jsonl").exists()
+
+    # resuming with budget left judges the chunk again instead of replaying
+    # the cut-short run from AuditKIT's cache
+    tight.cap_usd = 1.0
+    judge_chunks(tmp_path, TukaJudge(tight_call, "fake-tight"), tight, **kw)
+    rows = (tmp_path / "base/afri-jbb-harm/hau.judged.jsonl").read_text(encoding="utf-8")
+    assert "JudgeError" not in rows and len(rows.splitlines()) == 3
+
+
+def test_anthropic_client_request_and_metering(monkeypatch):
+    import sys
+    import types
+
+    from isoglot.judge import SpendMeter, anthropic_client
+
+    sent = {}
+
+    def response(model, stop="end_turn"):
+        return types.SimpleNamespace(
+            model=model, stop_reason=stop, stop_details=None,
+            usage=types.SimpleNamespace(input_tokens=1000, output_tokens=20),
+            content=[types.SimpleNamespace(type="text", text='{"label": "Refused", "reason": "r"}')])
+
+    replies = [response("claude-sonnet-5-5"), response("claude-opus-4-8"),
+               response("claude-opus-4-8", stop="refusal")]
+
+    class FakeClient:
+        def __init__(self, api_key):
+            self.beta = types.SimpleNamespace(messages=types.SimpleNamespace(create=self.create))
+
+        def create(self, **kw):
+            sent.update(kw)
+            return replies.pop(0)
+
+    monkeypatch.setitem(sys.modules, "anthropic", types.SimpleNamespace(Anthropic=FakeClient))
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
+    meter = SpendMeter(5.0, 2.0, 10.0)
+    call = anthropic_client("claude-sonnet-5-5", meter)
+
+    assert parse_label(call("m"))[0] == "Refused"
+    assert sent["fallbacks"] == "default" and sent["thinking"] == {"type": "between_tools"}
+    assert sent["output_config"]["format"]["schema"]["properties"]["label"]["enum"] == list(LABELS)
+    call("m")                                   # served by the fallback: Opus prices
+    assert meter.fallbacks == 1
+    assert meter.spent_usd == pytest.approx((1000 * 2 + 20 * 10 + 1000 * 5 + 20 * 25) / 1e6)
+    assert parse_label(call("m"))[0] is None and meter.refusals == 1
+
+
+def test_anthropic_client_needs_env_key(monkeypatch):
+    from isoglot.judge import SpendMeter, anthropic_client
+
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    with pytest.raises(RuntimeError, match="ANTHROPIC_API_KEY"):
+        anthropic_client("claude-sonnet-5-5", SpendMeter(1.0, 2.0, 10.0))
+
+
 def test_labels_constant():
     assert LABELS == ("Jailbroken", "Refused", "Deflected")

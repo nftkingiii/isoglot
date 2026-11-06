@@ -17,10 +17,12 @@ Work in progress. What exists today:
 - [x] Public TukaBench prompts loaded as AuditKIT samples (1,200 prompts: harm, culture
       and benign sets × English, Hausa, Yoruba, Igbo)
 - [x] Generation through AuditKIT's `hf:` backend, saved with run settings
-- [x] TukaBench's 3-way judge (Jailbroken / Refused / Deflected) as an AuditKIT metric
+- [x] TukaBench's 3-way judge prompt (Jailbroken / Refused / Deflected) as an AuditKIT metric,
+      judged by Claude Sonnet 5.5 with a hard spend cap
+- [x] Baseline answers generated: 1,200 Tiny Aya answers, 0 empty (Kaggle T4, 82 min)
 - [x] Per-language report: attack success rate, refusal, deflection, over-refusal, RCD,
       bootstrap intervals
-- [ ] Baseline results for Tiny Aya
+- [ ] Baseline judged results for Tiny Aya
 - [ ] Locating refusal per language (CircuitKIT, SafeTune)
 - [ ] Repairs and before/after results
 
@@ -32,14 +34,17 @@ No results are claimed yet.
 pip install -e ".[gpu,judge,dev]"
 pytest
 isoglot generate --out runs/base/answers.jsonl --batch-size 8      # needs a GPU and HF_TOKEN
-isoglot judge runs/base/answers.jsonl --judge-model <model> --out runs/base/judged.jsonl
+isoglot judge runs/base/answers.jsonl --cap 5 --out runs/base/judged.jsonl  # needs ANTHROPIC_API_KEY
 isoglot report runs/base/judged.jsonl
 ```
 
-The judge reads its key from the `JUDGE_API_KEY` environment variable and works with any
-OpenAI-compatible endpoint (`--base-url`).
+The judge reads its key from the `ANTHROPIC_API_KEY` environment variable and stops once it
+has spent `--cap` dollars. TukaBench judged with GPT-4.1; Isoglot uses Claude Sonnet 5.5 with
+the same prompt, so rates are not one-to-one comparable with the paper's.
 
-On Kaggle, use [`notebooks/01_baseline.ipynb`](notebooks/01_baseline.ipynb).
+On Kaggle, use [`notebooks/01_baseline.ipynb`](notebooks/01_baseline.ipynb) (GPU) to generate
+and [`notebooks/02_judge.ipynb`](notebooks/02_judge.ipynb) (CPU) to judge. Both upload
+results chunk by chunk to a private Hugging Face dataset and resume if stopped.
 
 ## Data and licenses
 
@@ -48,6 +53,7 @@ On Kaggle, use [`notebooks/01_baseline.ipynb`](notebooks/01_baseline.ipynb).
 | Model | [CohereLabs/tiny-aya-global](https://huggingface.co/CohereLabs/tiny-aya-global) | CC BY-NC 4.0 |
 | Evaluation prompts | [McGill-NLP/tukabench](https://huggingface.co/datasets/McGill-NLP/tukabench) (public afri-jbb sets) | CC BY-NC 4.0 |
 | Judge rubric | TukaBench `gpt4_judge.py`, reused verbatim | CC BY-NC 4.0 |
+| Judge model | Claude Sonnet 5.5 (`claude-sonnet-5-5`), Anthropic API | Anthropic terms |
 
 TukaBench prompts are used for evaluation only, never for training.
 
