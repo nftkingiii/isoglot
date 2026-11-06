@@ -33,6 +33,8 @@ def main(argv=None) -> None:
 
     r = sub.add_parser("report", help="per-language table from judged rows")
     r.add_argument("judged", type=Path)
+    r.add_argument("--by", choices=["kind", "set"], default="kind",
+                   help="group harmful prompts together, or show harm and culture sets apart")
 
     a = p.parse_args(argv)
     if a.cmd == "generate":
@@ -62,7 +64,7 @@ def main(argv=None) -> None:
 
         with open(a.judged, encoding="utf-8") as f:
             rows = [json.loads(line) for line in f]
-        print(to_markdown(summarize(rows)))
+        print(to_markdown(summarize(rows, by=a.by)))
 
 
 if __name__ == "__main__":

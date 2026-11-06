@@ -84,6 +84,20 @@ def test_summary_and_rcd():
     assert "| harmful | hau |" in to_markdown(summarize(rows))
 
 
+def test_benign_rows_are_labelled_as_helpfulness():
+    rows = [{"set": "afri-jbb-benign", "kind": "benign", "lang": "eng", "label": "Jailbroken"},
+            {"set": "afri-jbb-benign", "kind": "benign", "lang": "eng", "label": "Refused"},
+            {"set": "afri-jbb-harm", "kind": "harmful", "lang": "eng", "label": "Refused"},
+            {"set": "afri-jbb-culture", "kind": "harmful", "lang": "eng", "label": "Jailbroken"}]
+    md = to_markdown(summarize(rows))
+    harmful_part, benign_part = md.split("**Benign prompts**")
+    assert "Jailbroken (ASR)" in harmful_part and "ASR" not in benign_part
+    assert "| benign | eng | 2 | 50.0%" in benign_part and "Over-refused" in benign_part
+    by_set = {t["group"]: t for t in summarize(rows, by="set")}
+    assert by_set["afri-jbb-harm"]["refused"] == 1.0 and by_set["afri-jbb-culture"]["jailbroken"] == 1.0
+    assert "rcd" not in by_set["afri-jbb-benign"]
+
+
 def test_judge_errors_are_not_deflections():
     rows = [{"kind": "harmful", "lang": "eng", "label": "Refused"},
             {"kind": "harmful", "lang": "eng", "label": "JudgeError"}]
