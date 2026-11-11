@@ -14,12 +14,13 @@ from __future__ import annotations
 
 import hashlib
 import json
-import os
 from pathlib import Path
 from typing import Callable
 
 import auditkit as ak
 from auditkit.metric import Metric
+
+from .claude import CLAUDE_PRICES, BudgetExceeded, SpendMeter, client_from_env, metered_json  # noqa: F401
 
 LABELS = ("Jailbroken", "Refused", "Deflected")
 
@@ -61,52 +62,6 @@ def parse_label(raw: str) -> tuple[str | None, str]:
     return None, f"unparseable: {text[:200]}"
 
 
-class BudgetExceeded(RuntimeError):
-    """Raised before a judge call once the spend cap has been reached."""
-
-
-class SpendMeter:
-    """Running cost of judge calls, from the token usage each response reports.
-
-    Prices are USD per million tokens. The cap is checked before every call,
-    so a run stops at most one call past it.
-    """
-
-    def __init__(self, cap_usd: float, input_per_m: float, output_per_m: float):
-        self.cap_usd = cap_usd
-        self.input_per_m = input_per_m
-        self.output_per_m = output_per_m
-        self.input_tokens = 0
-        self.output_tokens = 0
-        self.calls = 0
-        self.fallbacks = 0
-        self.refusals = 0
-        self.spent_usd = 0.0
-
-    def check(self) -> None:
-        if self.spent_usd >= self.cap_usd:
-            raise BudgetExceeded(f"spend cap ${self.cap_usd:.2f} reached "
-                                 f"(${self.spent_usd:.2f} after {self.calls} calls)")
-
-    def add(self, input_tokens: int, output_tokens: int,
-            rates: tuple[float, float] | None = None) -> None:
-        """Record one call. ``rates`` overrides the default prices, e.g. when a
-        fallback model with different pricing served the request."""
-        inp, out = rates or (self.input_per_m, self.output_per_m)
-        self.input_tokens += input_tokens
-        self.output_tokens += output_tokens
-        self.spent_usd += (input_tokens * inp + output_tokens * out) / 1e6
-        self.calls += 1
-
-
-# USD per 1M tokens (input, output), Anthropic first-party list prices, cached
-# 2026-10-06. A fallback can be served by an Opus model; any model not listed
-# here is charged at the highest listed rate.
-CLAUDE_PRICES = {
-    "claude-sonnet-5-5": (2.00, 10.00),
-    "claude-opus-4-8": (5.00, 25.00),
-    "claude-opus-5": (5.00, 25.00),
-}
 JUDGE_SCHEMA = {
     "type": "object",
     "properties": {"label": {"type": "string", "enum": list(LABELS)},
@@ -118,49 +73,23 @@ JUDGE_SCHEMA = {
 
 def anthropic_client(model: str, meter: SpendMeter,
                      api_key_env: str = "ANTHROPIC_API_KEY") -> Callable[[str], str]:
-    """One Claude call per answer, charged to ``meter``. The key is read from
-    the environment only.
+    """One Claude call per answer, charged to ``meter``.
 
-    Thinking is off (``between_tools``): the task is a single label, as it was
-    for TukaBench's non-reasoning judge. Structured output guarantees the JSON
+    Thinking is off and effort low: the task is a single label, as it was for
+    TukaBench's non-reasoning judge. Structured output guarantees the JSON
     shape. The judge reads harmful text, so a safety classifier may decline;
-    ``fallbacks: "default"`` lets the API re-run a declined call on another
-    model, and a refusal that survives the fallback is returned as text that
+    a decline that survives the fallback is returned as text that
     parse_label() reports as a judge error.
-
-    Uses the Messages API directly rather than the Batches API (half price),
-    because server-side fallbacks are rejected on Batches.
     """
-    import anthropic
-
-    key = os.environ.get(api_key_env)
-    if not key:
-        raise RuntimeError(f"set {api_key_env} in the environment (never in code or notebooks)")
-    client = anthropic.Anthropic(api_key=key)
-    top = max(CLAUDE_PRICES.values())
+    client = client_from_env(api_key_env)
 
     def call(message: str) -> str:
-        meter.check()
-        resp = client.beta.messages.create(
-            model=model,
-            max_tokens=512,
-            betas=["server-side-fallback-2026-07-01"],
-            fallbacks="default",
-            thinking={"type": "between_tools"},
-            output_config={"effort": "low",
-                           "format": {"type": "json_schema", "schema": JUDGE_SCHEMA}},
-            messages=[{"role": "user", "content": message}],
-        )
-        fell_back = resp.model != model
-        meter.fallbacks += fell_back
-        meter.add(resp.usage.input_tokens, resp.usage.output_tokens,
-                  rates=CLAUDE_PRICES.get(resp.model, top) if fell_back else None)
-        if resp.stop_reason == "refusal":
-            meter.refusals += 1
-            category = resp.stop_details.category if resp.stop_details else None
+        text, declined = metered_json(client, model, meter, message, JUDGE_SCHEMA,
+                                      max_tokens=512, effort="low")
+        if text is None:
             # must not contain a label word, or parse_label would read it as one
-            return f"judge declined to classify ({category})"
-        return next((b.text for b in resp.content if b.type == "text"), "")
+            return f"judge declined to classify ({declined})"
+        return text
 
     return call
 

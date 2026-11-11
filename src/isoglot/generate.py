@@ -9,7 +9,9 @@ from __future__ import annotations
 import json
 import os
 import platform
+import tempfile
 import time
+from contextlib import contextmanager
 from pathlib import Path
 from typing import Callable
 
@@ -26,7 +28,29 @@ def generate(samples: list[ak.Sample], model_id: str, *, max_tokens: int = 512,
     if model is None:
         model = hf_model(model_id, batch_size=batch_size,
                          hf_token=hf_token or os.environ.get("HF_TOKEN"), **model_opts)
-    return ak.generate(samples, model=model, config=config)
+    with _fresh_auditkit_cache():
+        return ak.generate(samples, model=model, config=config)
+
+
+@contextmanager
+def _fresh_auditkit_cache():
+    """Run with an empty, throwaway AuditKIT result cache.
+
+    AuditKIT caches runs by a fingerprint of the model name and run settings.
+    Generation also depends on state that fingerprint cannot see (steering
+    hooks, a fine-tuned adapter loaded under the same name, the pipeline batch
+    size), so a cached run could replay answers from a different model state.
+    """
+    with tempfile.TemporaryDirectory() as tmp:
+        old = os.environ.get("XDG_CACHE_HOME")
+        os.environ["XDG_CACHE_HOME"] = tmp
+        try:
+            yield
+        finally:
+            if old is None:
+                os.environ.pop("XDG_CACHE_HOME", None)
+            else:
+                os.environ["XDG_CACHE_HOME"] = old
 
 
 def run_chunks(model, model_id: str, out_dir: Path, *, sets, langs, variant: str,
