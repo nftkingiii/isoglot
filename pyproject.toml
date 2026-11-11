@@ -15,6 +15,8 @@ dependencies = [
 gpu = ["auditkit[transformers]==1.1.3", "accelerate"]
 # Mechanism analysis (SafeTune activation extraction, Python >= 3.12)
 mechanism = ["safetune==0.1.12", "datasets"]
+# Training data (CuratorKIT clean/dedup/export with its secrets gate)
+data = ["curatorkit==0.1.24", "detect-secrets>=1.4"]
 # Claude judge (Anthropic API)
 judge = ["anthropic>=1.0"]
 dev = ["pytest>=8"]
