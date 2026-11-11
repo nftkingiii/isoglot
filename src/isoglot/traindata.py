@@ -115,14 +115,14 @@ def to_rows(seed: dict, out: dict) -> list[dict]:
 
 
 def generate_rows(client, model: str, meter: SpendMeter,
-                  seeds: list[dict]) -> tuple[list[dict], list[dict]]:
+                  seeds: list[dict], effort: str = "low") -> tuple[list[dict], list[dict]]:
     """Generate rows for ``seeds``. Returns (rows, skipped); a seed is skipped
     when Claude declines it or returns unusable JSON."""
     rows, skipped = [], []
     for s in seeds:
         content = f"{INSTRUCTIONS[s['kind']]}\n\nRequest:\n{s['prompt']}"
         text, declined = metered_json(client, model, meter, content, SCHEMA,
-                                      max_tokens=3000, effort="medium", system=SYSTEM)
+                                      max_tokens=3000, effort=effort, system=SYSTEM)
         if text is None:
             skipped.append({**s, "why": f"declined ({declined})"})
             continue
