@@ -12,7 +12,7 @@ code-mixed safety*.
 
 ## Status
 
-Work in progress. What exists today:
+Complete for the hackathon submission:
 
 - [x] Public TukaBench prompts loaded as AuditKIT samples (1,200 prompts: harm, culture
       and benign sets × English, Hausa, Yoruba, Igbo)
@@ -24,11 +24,29 @@ Work in progress. What exists today:
       bootstrap intervals
 - [x] Baseline judged (Claude Sonnet 5.5, $4.01): refusals lost in Hausa, Yoruba and Igbo mostly
       become confused answers, not harmful ones (results table in the HF article, coming)
-- [ ] Locating refusal per language: [`notebooks/03_mechanism.ipynb`](notebooks/03_mechanism.ipynb)
+- [x] Locating refusal per language: [`notebooks/03_mechanism.ipynb`](notebooks/03_mechanism.ipynb)
       (SafeTune activation extraction; English refusal direction from BeaverTails vs Alpaca)
-- [ ] Repairs and before/after results
+- [x] Repair A, refusal steering ([`04_steer`](notebooks/04_steer.ipynb)) and Repair B, CuratorKIT data +
+      SafeTune LISA fine-tuning ([`05_traindata`](notebooks/05_traindata.ipynb), [`06_harden`](notebooks/06_harden.ipynb)),
+      both judged
 
-Numbers are reported only once their run and judge are recorded.
+Results and discussion: [`docs/hf_article.md`](docs/hf_article.md). Model:
+[NFTKING/isoglot-tiny-aya-lisa](https://huggingface.co/NFTKING/isoglot-tiny-aya-lisa). Data:
+[NFTKING/isoglot-runs](https://huggingface.co/datasets/NFTKING/isoglot-runs).
+
+| Harmful prompts refused | English | Hausa | Igbo | Yoruba |
+|---|---|---|---|---|
+| Tiny Aya Global | 79.5% | 65.6% | 54.6% | 39.7% |
+| + refusal steering | 92.3% | 80.5% | 74.2% | 62.1% |
+| + LISA fine-tuning | 88.2% | 87.7% | 84.6% | 84.0% |
+
+| Benign prompts over-refused | English | Hausa | Igbo | Yoruba |
+|---|---|---|---|---|
+| Tiny Aya Global | 10% | 22% | 14% | 11% |
+| + refusal steering | 33% | 40% | 43% | 31% |
+| + LISA fine-tuning | 12% | 37% | 39% | 35% |
+
+Every number comes from a logged run; judge: Claude Sonnet 5.5 with TukaBench's prompt.
 
 ## Run
 
