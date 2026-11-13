@@ -103,8 +103,27 @@ English: calibrating on easy harmless prompts hides the price of steering.
 Did the fine-tune hurt general ability in these languages?
 [`07_capability`](notebooks/07_capability.ipynb) scores both models on the same 200 Belebele
 reading and 200 AfriMMLU knowledge questions per language by log-likelihood (AuditKIT
-`MCQAdapter`), with a paired bootstrap interval on the change. Results are added here once the run
-completes.
+`MCQAdapter`, no judge), with a paired bootstrap 95% interval on the change. Chance is 25%.
+
+| Benchmark | Lang | Base | LISA | Change [95% CI] |
+|---|---|---|---|---|
+| Belebele | English | 44.5% | 44.5% | +0.0 [-2.5, +2.5] |
+| Belebele | Hausa | 34.5% | 37.5% | +3.0 [+0.5, +6.0] |
+| Belebele | Igbo | 29.5% | 30.5% | +1.0 [-1.0, +3.0] |
+| Belebele | Yoruba | 24.5% | 24.5% | +0.0 [-3.0, +3.0] |
+| AfriMMLU | English | 29.5% | 29.5% | +0.0 [-2.0, +2.0] |
+| AfriMMLU | Hausa | 24.0% | 26.0% | +2.0 [-0.5, +5.0] |
+| AfriMMLU | Igbo | 20.5% | 21.5% | +1.0 [-2.0, +4.5] |
+| AfriMMLU | Yoruba | 25.0% | 22.5% | -2.5 [-5.5, +0.0] |
+
+- **No drop detected.** Every interval includes zero except Hausa reading, which rose 3 points.
+- **The reading scores line up with the safety gap.** Base reading accuracy falls from English
+  (44.5%) to Hausa (34.5%), Igbo (29.5%) and Yoruba (24.5%, chance), the same order as the refusal
+  gap: independent support for "the model does not understand", measured without any judge.
+- **Limits of this check.** Several cells sit near chance (all of AfriMMLU, Yoruba reading), so a
+  small loss there would not show. Log-likelihood scoring of an instruction-tuned model without its
+  chat template is a weak format for this model; it is the same for both models, so the comparison
+  is fair, but the absolute numbers understate what the model can do.
 
 ## Limitations
 
@@ -128,7 +147,7 @@ completes.
 | [`04_steer`](notebooks/04_steer.ipynb) | Calibrate and run refusal steering | Kaggle T4 | 89 min | $0 |
 | [`05_traindata`](notebooks/05_traindata.ipynb) | Seeds, decontamination, Claude-written rows, CuratorKIT | Kaggle CPU | ~100 min | $4.38 |
 | [`06_harden`](notebooks/06_harden.ipynb) | SafeTune LISA fine-tune, push, answer TukaBench | Kaggle T4 ×2 | 71 min | $0 |
-| [`07_capability`](notebooks/07_capability.ipynb) | Belebele + AfriMMLU before/after | Kaggle T4 | ~50 min | $0 |
+| [`07_capability`](notebooks/07_capability.ipynb) | Belebele + AfriMMLU before/after | Kaggle T4 | 21 min | $0 |
 
 Every notebook uploads results chunk by chunk to the Hub and resumes if stopped. Total API spend
 across the study: $15.43.

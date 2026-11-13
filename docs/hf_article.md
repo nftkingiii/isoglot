@@ -212,7 +212,34 @@ What changed:
   only 118 benign rows per language against benign test twins that share the harmful prompts'
   topics, this is the clearest place for more data.
 
-### 7.5 What else we tried or checked
+### 7.5 Capability check: no drop, and a second view of the gap
+
+Did the fine-tune hurt general ability in these languages?
+[`07_capability`](notebooks/07_capability.ipynb) scores both models on the same 200 Belebele
+reading and 200 AfriMMLU knowledge questions per language by log-likelihood (AuditKIT
+`MCQAdapter`, no judge), with a paired bootstrap 95% interval on the change. Chance is 25%.
+
+| Benchmark | Lang | Base | LISA | Change [95% CI] |
+|---|---|---|---|---|
+| Belebele | English | 44.5% | 44.5% | +0.0 [-2.5, +2.5] |
+| Belebele | Hausa | 34.5% | 37.5% | +3.0 [+0.5, +6.0] |
+| Belebele | Igbo | 29.5% | 30.5% | +1.0 [-1.0, +3.0] |
+| Belebele | Yoruba | 24.5% | 24.5% | +0.0 [-3.0, +3.0] |
+| AfriMMLU | English | 29.5% | 29.5% | +0.0 [-2.0, +2.0] |
+| AfriMMLU | Hausa | 24.0% | 26.0% | +2.0 [-0.5, +5.0] |
+| AfriMMLU | Igbo | 20.5% | 21.5% | +1.0 [-2.0, +4.5] |
+| AfriMMLU | Yoruba | 25.0% | 22.5% | -2.5 [-5.5, +0.0] |
+
+- **No drop detected.** Every interval includes zero except Hausa reading, which rose 3 points.
+- **The reading scores line up with the safety gap.** Base reading accuracy falls from English
+  (44.5%) to Hausa (34.5%), Igbo (29.5%) and Yoruba (24.5%, chance), the same order as the refusal
+  gap: independent support for "the model does not understand", measured without any judge.
+- **Limits of this check.** Several cells sit near chance (all of AfriMMLU, Yoruba reading), so a
+  small loss there would not show. Log-likelihood scoring of an instruction-tuned model without its
+  chat template is a weak format for this model; it is the same for both models, so the comparison
+  is fair, but the absolute numbers understate what the model can do.
+
+### 7.6 What else we tried or checked
 
 - A keyword refusal count first suggested the gap; it could not separate refusal from confusion,
   which is why every number above uses the 3-way judge.

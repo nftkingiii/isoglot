@@ -1,0 +1,34 @@
+8.2s 1 0.00s - Debugger warning: It seems that frozen modules are being used, which may
+8.2s 2 0.00s - make the debugger miss breakpoints. Please pass -Xfrozen_modules=off
+8.2s 3 0.00s - to python to disable frozen modules.
+8.2s 4 0.00s - Note: Debugging will proceed. Set PYDEVD_DISABLE_FILE_VALIDATION=1 to disable this validation.
+8.8s 5 0.00s - Debugger warning: It seems that frozen modules are being used, which may
+8.8s 6 0.00s - make the debugger miss breakpoints. Please pass -Xfrozen_modules=off
+8.8s 7 0.00s - to python to disable frozen modules.
+8.8s 8 0.00s - Note: Debugging will proceed. Set PYDEVD_DISABLE_FILE_VALIDATION=1 to disable this validation.
+29.3s 9 1600 questions | Tesla T4
+683.6s 10 base: 1600 scored, overall accuracy 29.0%, 10.9 min
+720.6s 11 [transformers] The following generation flags are not valid and may be ignored: ['cache_implementation']. Set `TRANSFORMERS_VERBOSITY=info` for more details.
+720.6s 12 
+720.6s 13 [transformers] The following generation flags are not valid and may be ignored: ['cache_implementation']. Set `TRANSFORMERS_VERBOSITY=info` for more details.
+1296.7s 14 lisa: 1600 scored, overall accuracy 29.6%, 10.2 min
+1297.2s 15 | Benchmark | Lang | n | Base | LISA | Change [95% CI] |
+1297.2s 16 |---|---|---|---|---|---|
+1297.2s 17 | afrimmlu | eng | 200 | 29.5% | 29.5% | +0.0% [-2.0%, +2.0%] |
+1297.2s 18 | afrimmlu | hau | 200 | 24.0% | 26.0% | +2.0% [-0.5%, +5.0%] |
+1297.2s 19 | afrimmlu | ibo | 200 | 20.5% | 21.5% | +1.0% [-2.0%, +4.5%] |
+1297.2s 20 | afrimmlu | yor | 200 | 25.0% | 22.5% | -2.5% [-5.5%, +0.0%] |
+1297.2s 21 | belebele | eng | 200 | 44.5% | 44.5% | +0.0% [-2.5%, +2.5%] |
+1297.2s 22 | belebele | hau | 200 | 34.5% | 37.5% | +3.0% [+0.5%, +6.0%] |
+1297.2s 23 | belebele | ibo | 200 | 29.5% | 30.5% | +1.0% [-1.0%, +3.0%] |
+1297.2s 24 | belebele | yor | 200 | 24.5% | 24.5% | +0.0% [-3.0%, +3.0%] |
+1297.2s 25 
+1298.2s 26 uploaded -> NFTKING/isoglot-runs capability/
+1304.4s 27 /usr/local/lib/python3.13/dist-packages/mistune.py:435: SyntaxWarning: invalid escape sequence '\|'
+1304.4s 28 cells[i][c] = re.sub('\\\\\|', '|', cell)
+1304.6s 29 /usr/local/lib/python3.13/dist-packages/nbconvert/filters/filter_links.py:36: SyntaxWarning: invalid escape sequence '\_'
+1304.6s 30 text = re.sub(r'_', '\_', text) # Escape underscores in display text
+1305.4s 31 [NbConvertApp] Converting notebook __notebook__.ipynb to notebook
+1305.5s 32 [NbConvertApp] Writing 333750 bytes to __notebook__.ipynb
+1308.0s 33 [NbConvertApp] Converting notebook __notebook__.ipynb to html
+1308.6s 34 [NbConvertApp] Writing 546803 bytes to __results__.html
