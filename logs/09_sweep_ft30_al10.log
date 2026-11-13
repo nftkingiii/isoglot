@@ -1,0 +1,42 @@
+11.6s 1 0.00s - Debugger warning: It seems that frozen modules are being used, which may
+11.6s 2 0.00s - make the debugger miss breakpoints. Please pass -Xfrozen_modules=off
+11.6s 3 0.00s - to python to disable frozen modules.
+11.6s 4 0.00s - Note: Debugging will proceed. Set PYDEVD_DISABLE_FILE_VALIDATION=1 to disable this validation.
+12.3s 5 0.00s - Debugger warning: It seems that frozen modules are being used, which may
+12.3s 6 0.00s - make the debugger miss breakpoints. Please pass -Xfrozen_modules=off
+12.3s 7 0.00s - to python to disable frozen modules.
+12.3s 8 0.00s - Note: Debugging will proceed. Set PYDEVD_DISABLE_FILE_VALIDATION=1 to disable this validation.
+13.7s 9 sweep-ft30-al10 | benign share of steps: 0.75
+58.0s 10 ['benign-input.jsonl', 'benign/README.md', 'benign/checksums.txt', 'benign/dataset_card.md', 'benign/lexsi_provenance.json', 'benign/manifest.json', 'benign/rejected.jsonl', 'benign/train/sft_messages.jsonl', 'benign/train/sft_sharegpt.jsonl', 'benign/validation/sft_messages.jsonl', 'benign/validation/sft_sharegpt.jsonl', 'benign_twins/README.md', 'benign_twins/checksums.txt', 'benign_twins/dataset_card.md', 'benign_twins/lexsi_provenance.json', 'benign_twins/manifest.json', 'benign_twins/rejected.jsonl', 'benign_twins/train/sft_messages.jsonl', 'benign_twins/train/sft_sharegpt.jsonl', 'benign_twins/validation/sft_messages.jsonl']
+58.0s 11 2 GPUs: ['Tesla T4', 'Tesla T4']
+126.5s 12 WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+126.5s 13 I0000 00:00:1794590651.238986      23 cudart_stub.cc:31] Could not find cuda drivers on your machine, GPU will not be used.
+126.7s 14 WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+126.7s 15 I0000 00:00:1794590651.238986      23 cudart_stub.cc:31] Could not find cuda drivers on your machine, GPU will not be used.
+126.7s 16 
+126.7s 17 WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+126.7s 18 I0000 00:00:1794590651.238986      23 cudart_stub.cc:31] Could not find cuda drivers on your machine, GPU will not be used.
+173.8s 19 {'1', '0'} | GPU0 3.8 GB, GPU1 2.5 GB
+1556.8s 20 trained in 23.1 min -> /kaggle/working/results/checkpoints/lisa
+1558.3s 21 [transformers] The following generation flags are not valid and may be ignored: ['cache_implementation']. Set `TRANSFORMERS_VERBOSITY=info` for more details.
+1558.3s 22 
+1558.3s 23 [transformers] The following generation flags are not valid and may be ignored: ['cache_implementation']. Set `TRANSFORMERS_VERBOSITY=info` for more details.
+1648.9s 24 pushed NFTKING/isoglot-tiny-aya-lisa-sweep-ft30-al10
+1853.1s 25 done afri-jbb-harm/hau: 100 answers, 0 empty, 3.3 min
+2173.7s 26 done afri-jbb-harm/yor: 100 answers, 0 empty, 5.3 min
+2370.4s 27 done afri-jbb-harm/ibo: 100 answers, 0 empty, 3.3 min
+2647.4s 28 done afri-jbb-culture/hau: 100 answers, 0 empty, 4.6 min
+3021.7s 29 done afri-jbb-culture/yor: 100 answers, 0 empty, 6.2 min
+3322.6s 30 done afri-jbb-culture/ibo: 100 answers, 0 empty, 5.0 min
+3622.2s 31 done afri-jbb-benign/hau: 100 answers, 0 empty, 5.0 min
+4043.6s 32 done afri-jbb-benign/yor: 100 answers, 0 empty, 7.0 min
+4362.3s 33 done afri-jbb-benign/ibo: 100 answers, 0 empty, 5.3 min
+4363.8s 34 done in 45.2 min -> NFTKING/isoglot-runs sweep-ft30-al10/answers.jsonl
+4371.0s 35 /usr/local/lib/python3.13/dist-packages/mistune.py:435: SyntaxWarning: invalid escape sequence '\|'
+4371.0s 36 cells[i][c] = re.sub('\\\\\|', '|', cell)
+4371.4s 37 /usr/local/lib/python3.13/dist-packages/nbconvert/filters/filter_links.py:36: SyntaxWarning: invalid escape sequence '\_'
+4371.4s 38 text = re.sub(r'_', '\_', text) # Escape underscores in display text
+4373.0s 39 [NbConvertApp] Converting notebook __notebook__.ipynb to notebook
+4373.1s 40 [NbConvertApp] Writing 407223 bytes to __notebook__.ipynb
+4375.6s 41 [NbConvertApp] Converting notebook __notebook__.ipynb to html
+4376.7s 42 [NbConvertApp] Writing 614701 bytes to __results__.html
