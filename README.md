@@ -66,6 +66,18 @@ On Kaggle, use [`notebooks/01_baseline.ipynb`](notebooks/01_baseline.ipynb) (GPU
 and [`notebooks/02_judge.ipynb`](notebooks/02_judge.ipynb) (CPU) to judge. Both upload
 results chunk by chunk to a private Hugging Face dataset and resume if stopped.
 
+## Contributions to the Lexsi stack
+
+Issues found while building Isoglot, reported to Lexsi with repros and fixes
+([`docs/upstream_issues.md`](docs/upstream_issues.md)):
+
+| Repo | What | Status |
+|---|---|---|
+| AuditKIT | Result cache replays runs across model state it cannot see; caches failed scoring; `hf:` ignores `RunConfig.batch_size` | Reported; fixed here with a throwaway cache (`isoglot/generate.py`) |
+| SafeTune | LISA cannot train a model split across GPUs | Reported; patched here (`isoglot/patches.py`, tested) |
+| SafeTune | Kaggle needs torchao uninstalled before LoRA training | [PR #85](https://github.com/Lexsi-Labs/SafeTune/pull/85) |
+| CuratorKIT | SecretsGate needs only `detect-secrets`, not the full hygiene extra | [PR #52](https://github.com/Lexsi-Labs/CuratorKIT/pull/52) |
+
 ## Data and licenses
 
 | What | Source | License |
