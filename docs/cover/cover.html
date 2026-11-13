@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Isoglot cover</title>
+<style>
+  :root {
+    --paper: #f5efe5;
+    --ink: #1e1a15;
+    --muted: #7a6f62;
+    --rule: #ddd2c2;
+    --before: #b9ab98;
+    --accent: #1f6b5c;
+  }
+  html, body { margin: 0; padding: 0; background: var(--paper); }
+  .card {
+    width: 1200px; height: 630px; box-sizing: border-box;
+    padding: 64px 72px 52px; display: grid;
+    grid-template-columns: 470px 1fr; grid-template-rows: 1fr auto; column-gap: 56px;
+    background: var(--paper); color: var(--ink);
+    font-family: "Segoe UI", system-ui, sans-serif;
+  }
+  .left { display: flex; flex-direction: column; justify-content: center; }
+  h1 {
+    font-family: Georgia, "Cambria", serif; font-weight: 400;
+    font-size: 104px; line-height: 1; letter-spacing: -2px; margin: 0 0 26px;
+  }
+  .line { font-family: Georgia, serif; font-size: 33px; line-height: 1.25; margin: 0 0 30px; }
+  .line em { font-style: normal; color: var(--accent); }
+  .langs { font-size: 21px; color: var(--muted); letter-spacing: 0.5px; margin: 0; }
+  .chart { align-self: center; }
+  .chart-title { font-size: 19px; color: var(--muted); margin: 0 0 16px 128px; }
+  footer {
+    grid-column: 1 / -1; border-top: 1px solid var(--rule); padding-top: 18px;
+    display: flex; justify-content: space-between; font-size: 18px; color: var(--muted);
+  }
+  footer strong { color: var(--ink); font-weight: 600; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="left">
+    <h1>Isoglot</h1>
+    <p class="line">The same safety<br>in <em>every language</em>.</p>
+    <p class="langs">Tiny Aya &nbsp;·&nbsp; Hausa &nbsp;·&nbsp; Yoruba &nbsp;·&nbsp; Igbo</p>
+  </div>
+  <div class="chart">
+    <p class="chart-title">Harmful requests refused: base → fine-tuned</p>
+    <svg width="560" height="300" viewBox="0 0 560 300" font-family="Segoe UI, system-ui, sans-serif">
+      <!-- x scale: 30% at x=128, 100% at x=540 -> 5.886 px per point -->
+      <g stroke="#ddd2c2" stroke-width="1">
+        <line x1="128" y1="10" x2="128" y2="262"/>
+        <line x1="245.7" y1="10" x2="245.7" y2="262"/>
+        <line x1="363.4" y1="10" x2="363.4" y2="262"/>
+        <line x1="481.1" y1="10" x2="481.1" y2="262"/>
+      </g>
+      <g font-size="15" fill="#7a6f62" text-anchor="middle">
+        <text x="128" y="290">30%</text><text x="245.7" y="290">50%</text>
+        <text x="363.4" y="290">70%</text><text x="481.1" y="290">90%</text>
+      </g>
+      <!-- rows: English, Hausa, Igbo, Yoruba -->
+      <g font-size="21" fill="#1e1a15">
+        <text x="0" y="47">English</text>
+        <text x="0" y="112">Hausa</text>
+        <text x="0" y="177">Igbo</text>
+        <text x="0" y="242">Yoruba</text>
+      </g>
+      <g stroke-width="4" stroke-linecap="round">
+        <line x1="419.3" y1="40" x2="470.5" y2="40" stroke="#b9ab98"/>
+        <line x1="337.5" y1="105" x2="467.6" y2="105" stroke="#b9ab98"/>
+        <line x1="272.8" y1="170" x2="449.4" y2="170" stroke="#b9ab98"/>
+        <line x1="185.1" y1="235" x2="445.8" y2="235" stroke="#1f6b5c"/>
+      </g>
+      <g fill="#b9ab98">
+        <circle cx="419.3" cy="40" r="8"/><circle cx="337.5" cy="105" r="8"/><circle cx="272.8" cy="170" r="8"/><circle cx="185.1" cy="235" r="8"/>
+      </g>
+      <g fill="#1f6b5c">
+        <circle cx="470.5" cy="40" r="10"/><circle cx="467.6" cy="105" r="10"/><circle cx="449.4" cy="170" r="10"/><circle cx="445.8" cy="235" r="10"/>
+      </g>
+      <g font-size="17" fill="#7a6f62" text-anchor="end">
+        <text x="405.3" y="46">80</text><text x="323.5" y="111">66</text><text x="258.8" y="176">55</text><text x="171.1" y="241">40</text>
+      </g>
+      <g font-size="19" fill="#1f6b5c" font-weight="600">
+        <text x="488.5" y="47">88%</text><text x="485.6" y="112">88%</text><text x="467.4" y="177">85%</text><text x="463.8" y="242">84%</text>
+      </g>
+    </svg>
+  </div>
+  <footer>
+    <span><strong>Lexsi AI Safety &amp; Alignment Hackathon</strong> &nbsp;·&nbsp; Track 2a, multilingual safety</span>
+    <span>AuditKIT · SafeTune · CuratorKIT</span>
+  </footer>
+</div>
+</body>
+</html>
