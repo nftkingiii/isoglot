@@ -30,7 +30,7 @@ Complete for the hackathon submission:
       SafeTune LISA fine-tuning ([`05_traindata`](notebooks/05_traindata.ipynb), [`06_harden`](notebooks/06_harden.ipynb)),
       both judged
 
-Results and discussion: [`docs/hf_article.md`](docs/hf_article.md). Model:
+Article: [Isoglot: Tiny Aya's safety gap in African languages is a comprehension gap](https://huggingface.co/blog/NFTKING/isoglot-tiny-ayas-safety-gap-in-african-languages) (source: [`docs/hf_article.md`](docs/hf_article.md)). Kaggle logs of every run: [`logs/`](logs/). Model:
 [NFTKING/isoglot-tiny-aya-lisa](https://huggingface.co/NFTKING/isoglot-tiny-aya-lisa). Data:
 [NFTKING/isoglot-runs](https://huggingface.co/datasets/NFTKING/isoglot-runs).
 

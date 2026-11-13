@@ -1,0 +1,47 @@
+7.8s 1 0.00s - Debugger warning: It seems that frozen modules are being used, which may
+7.8s 2 0.00s - make the debugger miss breakpoints. Please pass -Xfrozen_modules=off
+7.8s 3 0.00s - to python to disable frozen modules.
+7.8s 4 0.00s - Note: Debugging will proceed. Set PYDEVD_DISABLE_FILE_VALIDATION=1 to disable this validation.
+8.4s 5 0.00s - Debugger warning: It seems that frozen modules are being used, which may
+8.4s 6 0.00s - make the debugger miss breakpoints. Please pass -Xfrozen_modules=off
+8.4s 7 0.00s - to python to disable frozen modules.
+8.4s 8 0.00s - Note: Debugging will proceed. Set PYDEVD_DISABLE_FILE_VALIDATION=1 to disable this validation.
+44.3s 9 ['benign-input.jsonl', 'benign/README.md', 'benign/checksums.txt', 'benign/dataset_card.md', 'benign/lexsi_provenance.json', 'benign/manifest.json', 'benign/rejected.jsonl', 'benign/train/sft_messages.jsonl', 'benign/train/sft_sharegpt.jsonl', 'benign/validation/sft_messages.jsonl', 'benign/validation/sft_sharegpt.jsonl', 'harmful-input.jsonl', 'harmful/README.md', 'harmful/checksums.txt', 'harmful/dataset_card.md', 'harmful/lexsi_provenance.json', 'harmful/manifest.json', 'harmful/rejected.jsonl', 'harmful/train/sft_messages.jsonl', 'harmful/train/sft_sharegpt.jsonl']
+44.3s 10 2 GPUs: ['Tesla T4', 'Tesla T4']
+90.3s 11 WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+90.3s 12 I0000 00:00:1794418649.003892      22 cudart_stub.cc:31] Could not find cuda drivers on your machine, GPU will not be used.
+90.5s 13 WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+90.5s 14 I0000 00:00:1794418649.003892      22 cudart_stub.cc:31] Could not find cuda drivers on your machine, GPU will not be used.
+90.5s 15 
+90.5s 16 WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+90.5s 17 I0000 00:00:1794418649.003892      22 cudart_stub.cc:31] Could not find cuda drivers on your machine, GPU will not be used.
+136.0s 18 {'0', '1'} | GPU0 3.8 GB, GPU1 2.5 GB
+939.3s 19 trained in 13.4 min -> /kaggle/working/results/checkpoints/lisa
+940.7s 20 [transformers] The following generation flags are not valid and may be ignored: ['cache_implementation']. Set `TRANSFORMERS_VERBOSITY=info` for more details.
+940.7s 21 
+940.7s 22 [transformers] The following generation flags are not valid and may be ignored: ['cache_implementation']. Set `TRANSFORMERS_VERBOSITY=info` for more details.
+1016.1s 23 pushed NFTKING/isoglot-tiny-aya-lisa
+1113.1s 24 done afri-jbb-harm/eng: 100 answers, 0 empty, 1.5 min
+1299.2s 25 done afri-jbb-harm/hau: 100 answers, 0 empty, 3.1 min
+1627.3s 26 done afri-jbb-harm/yor: 100 answers, 0 empty, 5.5 min
+1824.8s 27 done afri-jbb-harm/ibo: 100 answers, 0 empty, 3.3 min
+2002.6s 28 done afri-jbb-culture/eng: 100 answers, 0 empty, 3.0 min
+2266.1s 29 done afri-jbb-culture/hau: 100 answers, 0 empty, 4.4 min
+2614.6s 30 done afri-jbb-culture/yor: 100 answers, 0 empty, 5.8 min
+2884.8s 31 done afri-jbb-culture/ibo: 100 answers, 0 empty, 4.5 min
+3096.6s 32 done afri-jbb-benign/eng: 100 answers, 0 empty, 3.5 min
+3467.9s 33 done afri-jbb-benign/hau: 100 answers, 0 empty, 6.2 min
+3468.4s 34 [transformers] You seem to be using the pipelines sequentially on GPU. In order to maximize efficiency please use a dataset
+3468.4s 35 
+3468.4s 36 [transformers] You seem to be using the pipelines sequentially on GPU. In order to maximize efficiency please use a dataset
+3898.2s 37 done afri-jbb-benign/yor: 100 answers, 0 empty, 7.2 min
+4255.3s 38 done afri-jbb-benign/ibo: 100 answers, 0 empty, 5.9 min
+4256.3s 39 done in 53.9 min -> NFTKING/isoglot-runs harden/answers.jsonl
+4263.1s 40 /usr/local/lib/python3.13/dist-packages/mistune.py:435: SyntaxWarning: invalid escape sequence '\|'
+4263.1s 41 cells[i][c] = re.sub('\\\\\|', '|', cell)
+4263.3s 42 /usr/local/lib/python3.13/dist-packages/nbconvert/filters/filter_links.py:36: SyntaxWarning: invalid escape sequence '\_'
+4263.3s 43 text = re.sub(r'_', '\_', text) # Escape underscores in display text
+4264.2s 44 [NbConvertApp] Converting notebook __notebook__.ipynb to notebook
+4264.3s 45 [NbConvertApp] Writing 437840 bytes to __notebook__.ipynb
+4266.8s 46 [NbConvertApp] Converting notebook __notebook__.ipynb to html
+4267.4s 47 [NbConvertApp] Writing 639105 bytes to __results__.html
