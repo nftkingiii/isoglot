@@ -21,3 +21,6 @@ __pycache__/
 *.egg-info/
 .pytest_cache/
 .ipynb_checkpoints/
+
+# Downloaded judged rows for the trade-off plot
+docs/tradeoff/.cache/
