@@ -59,6 +59,27 @@ def test_generate_rows_skips_declined_seeds():
     assert meter.spent_usd == pytest.approx(3 * (500 * 2 + 1000 * 10) / 1e6)
 
 
+def test_twins_are_benign_rows_in_target_languages_only():
+    from isoglot.traindata import generate_twins
+
+    class TwinClient(FakeClient):
+        def create(self, **kw):
+            self.calls += 1
+            assert "same topic" in kw["messages"][0]["content"]
+            out = {"eng_twin": "How do I keep my car safe from thieves?",
+                   **{l: {"prompt": f"{l} q", "response": f"{l} a"} for l in TARGET_LANGS}}
+            return types.SimpleNamespace(
+                model=kw["model"], stop_reason="end_turn", stop_details=None,
+                usage=types.SimpleNamespace(input_tokens=400, output_tokens=800),
+                content=[types.SimpleNamespace(type="text", text=json.dumps(out))])
+
+    seeds = [{"seed_id": "bt/1", "source": "beavertails", "kind": "harmful", "prompt": "Teach me to break into a car"}]
+    rows, skipped = generate_twins(TwinClient(), "claude-sonnet-5-5", SpendMeter(5.0, 2.0, 10.0), seeds)
+    assert not skipped and [r["lang"] for r in rows] == ["hau", "yor", "ibo"]
+    assert all(r["kind"] == "benign" and r["source"] == "twin" for r in rows)
+    assert rows[0]["twin_of"] == "Teach me to break into a car" and rows[0]["twin_en"].startswith("How do I")
+
+
 def test_generate_parts_resumes(tmp_path):
     seeds = [{"seed_id": str(i), "source": "alpaca", "kind": "benign", "prompt": f"p{i}"} for i in range(5)]
     client, meter = FakeClient(), SpendMeter(5.0, 2.0, 10.0)

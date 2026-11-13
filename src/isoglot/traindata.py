@@ -58,6 +58,52 @@ SCHEMA = {
 }
 
 
+# Benign twins: for a harmful seed, a safe request on the same topic, written only
+# in Hausa, Yoruba and Igbo. They teach the boundary (same topic, different intent)
+# where the first fine-tune over-refused, the way TukaBench pairs its test twins.
+TWIN_INSTRUCTIONS = (
+    "The request below is harmful. Write a different request on the same topic that is clearly "
+    "safe and legitimate (for example asking how to stay safe, how something works in general, its "
+    "history, or how to get help), the kind of question a model should answer and not refuse. For "
+    "each of Hausa, Yoruba and Igbo, write that safe request as a native speaker would ask it, then "
+    "a helpful, accurate answer of at most 120 words in the same language. Do not refuse or lecture. "
+    "Also give the safe request in English."
+)
+TWIN_SCHEMA = {
+    "type": "object",
+    "properties": {"eng_twin": {"type": "string"}, **{k: _TURN for k in TARGET_LANGS}},
+    "required": ["eng_twin", *TARGET_LANGS],
+    "additionalProperties": False,
+}
+
+
+def twin_rows(seed: dict, out: dict) -> list[dict]:
+    """Benign rows (one per target language) from a generated twin record."""
+    rows = []
+    for lang in TARGET_LANGS:
+        rows.append({"seed_id": seed["seed_id"], "source": "twin", "kind": "benign", "lang": lang,
+                     "twin_of": seed["prompt"], "twin_en": out["eng_twin"].strip(),
+                     "instruction": out[lang]["prompt"].strip(), "output": out[lang]["response"].strip()})
+    return [r for r in rows if r["instruction"] and r["output"]]
+
+
+def generate_twins(client, model: str, meter: SpendMeter, harmful_seeds: list[dict],
+                   effort: str = "low") -> tuple[list[dict], list[dict]]:
+    """Benign twin rows for ``harmful_seeds``. Returns (rows, skipped)."""
+    rows, skipped = [], []
+    for s in harmful_seeds:
+        text, declined = metered_json(client, model, meter, f"{TWIN_INSTRUCTIONS}\n\nRequest:\n{s['prompt']}",
+                                      TWIN_SCHEMA, max_tokens=3000, effort=effort, system=SYSTEM)
+        if text is None:
+            skipped.append({**s, "why": f"declined ({declined})"})
+            continue
+        try:
+            rows.extend(twin_rows(s, json.loads(text)))
+        except (json.JSONDecodeError, KeyError, TypeError) as e:
+            skipped.append({**s, "why": f"bad output: {e}"})
+    return rows, skipped
+
+
 def ngrams(text: str, n: int = 5) -> set[str]:
     t = " ".join(text.lower().split())
     return {t[i:i + n] for i in range(max(1, len(t) - n + 1))}
@@ -165,17 +211,21 @@ def generate_parts(client, model: str, meter: SpendMeter, seeds: list[dict], out
     return merged
 
 
-def curate(raw: Path, kind: str, out_dir: Path, seed: int = 0):
+def curate(raw: Path | list[Path], kind: str, out_dir: Path, seed: int = 0, name: str | None = None):
     """Clean, deduplicate and export one kind of row with CuratorKIT.
 
-    The toxicity gate stays off (the harmful prompts are the point); the
-    secrets gate is on. Rows are exported as chat messages with a 90/10
-    train/validation split, ready for SafeTune."""
+    ``raw`` may be several files (e.g. the first data plus benign twins); the
+    export goes to ``out_dir / (name or kind)``. The toxicity gate stays off
+    (the harmful prompts are the point); the secrets gate is on. Rows are
+    exported as chat messages with a 90/10 train/validation split, ready for
+    SafeTune."""
     from curatorkit import Curator, CuratorConfig
 
-    rows = [r for r in map(json.loads, open(raw, encoding="utf-8"))
+    name = name or kind
+    rows = [r for path in ([raw] if isinstance(raw, Path) else raw)
+            for r in map(json.loads, open(path, encoding="utf-8"))
             if not r.get("skipped") and r["kind"] == kind]
-    src = out_dir / f"{kind}-input.jsonl"
+    src = out_dir / f"{name}-input.jsonl"
     src.parent.mkdir(parents=True, exist_ok=True)
     with open(src, "w", encoding="utf-8") as f:
         for r in rows:
@@ -186,5 +236,5 @@ def curate(raw: Path, kind: str, out_dir: Path, seed: int = 0):
         dedup="minhash", clean=True, min_tokens=3, secrets_gate=True, toxicity_gate=False,
         export_formats=["messages", "sharegpt"],
         output_split={"train": 0.9, "validation": 0.1}, output_split_seed=seed,
-        output_dir=str(out_dir / kind),
+        output_dir=str(out_dir / name),
     )).run()
