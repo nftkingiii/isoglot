@@ -98,6 +98,28 @@ English: calibrating on easy harmless prompts hides the price of steering.
   2 epochs, lr 1e-4, rho 0.1, 20/20 alignment/fine-tune steps, base in fp16 across two T4s,
   13.4 minutes.
 
+### Did the fine-tune teach recognition, or only refusal?
+
+[`03_mechanism`](notebooks/03_mechanism.ipynb) re-run on the fine-tuned model (`VARIANT = "harden"`;
+its own refusal direction, rebuilt from the same BeaverTails/Alpaca data, and its own judged
+answers). Same layers, base → fine-tuned, AUROC:
+
+| | English | Hausa | Igbo | Yoruba |
+|---|---|---|---|---|
+| Harmful vs benign, layer 25 | 0.92 → **0.95** | 0.81 → **0.89** | 0.78 → **0.85** | 0.74 → **0.80** |
+| Harmful vs benign, layer 32 | 0.92 → **0.95** | 0.81 → **0.88** | 0.79 → **0.84** | 0.74 → **0.78** |
+| Deflected harmful (count) | 18 → 16 | 56 → 16 | 71 → 26 | 107 → 26 |
+| Deflected vs benign, layer 25 | 0.69 → 0.79 | 0.57 → 0.59 | 0.54 → 0.45 | 0.60 → 0.53 |
+
+- **Recognition improved, not just refusal.** Harmful and benign prompts separate better inside the
+  fine-tuned model in every language, at every layer we compared (best layer: Hausa 0.82 → 0.89,
+  Igbo 0.80 → 0.85, Yoruba 0.75 → 0.80).
+- **What is left is what it still does not understand.** The harmful prompts it still deflects
+  (16-26 per language, down from 56-107) still look benign on the direction (0.45-0.59).
+- **The boundary is still blurrier than in English** (0.80-0.89 against 0.95), which fits the
+  remaining over-refusal of benign twins in these languages and is what the twins sweep targets.
+  The deflected-prompt counts are small, so treat those AUROCs as rough.
+
 ### Capability check
 
 Did the fine-tune hurt general ability in these languages?
@@ -143,7 +165,7 @@ reading and 200 AfriMMLU knowledge questions per language by log-likelihood (Aud
 |---|---|---|---|---|
 | [`01_baseline`](notebooks/01_baseline.ipynb) | Tiny Aya answers 1,200 TukaBench prompts | Kaggle T4 | 82 min | $0 |
 | [`02_judge`](notebooks/02_judge.ipynb) | 3-way judge for any run (`VARIANT`), spend cap, pilot | Kaggle CPU | ~50 min | $3.32-4.01 |
-| [`03_mechanism`](notebooks/03_mechanism.ipynb) | Refusal direction per layer, per-language separation | Kaggle T4 | 7 min | $0 |
+| [`03_mechanism`](notebooks/03_mechanism.ipynb) | Refusal direction per layer, per-language separation (base or fine-tuned) | Kaggle T4 | 7 min | $0 |
 | [`04_steer`](notebooks/04_steer.ipynb) | Calibrate and run refusal steering | Kaggle T4 | 89 min | $0 |
 | [`05_traindata`](notebooks/05_traindata.ipynb) | Seeds, decontamination, Claude-written rows, CuratorKIT | Kaggle CPU | ~100 min | $4.38 |
 | [`06_harden`](notebooks/06_harden.ipynb) | SafeTune LISA fine-tune, push, answer TukaBench | Kaggle T4 ×2 | 71 min | $0 |

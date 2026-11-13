@@ -212,6 +212,28 @@ What changed:
   only 118 benign rows per language against benign test twins that share the harmful prompts'
   topics, this is the clearest place for more data.
 
+### 7.4b Did the fine-tune teach recognition, or only refusal?
+
+[`03_mechanism`](notebooks/03_mechanism.ipynb) re-run on the fine-tuned model (`VARIANT = "harden"`;
+its own refusal direction, rebuilt from the same BeaverTails/Alpaca data, and its own judged
+answers). Same layers, base → fine-tuned, AUROC:
+
+| | English | Hausa | Igbo | Yoruba |
+|---|---|---|---|---|
+| Harmful vs benign, layer 25 | 0.92 → **0.95** | 0.81 → **0.89** | 0.78 → **0.85** | 0.74 → **0.80** |
+| Harmful vs benign, layer 32 | 0.92 → **0.95** | 0.81 → **0.88** | 0.79 → **0.84** | 0.74 → **0.78** |
+| Deflected harmful (count) | 18 → 16 | 56 → 16 | 71 → 26 | 107 → 26 |
+| Deflected vs benign, layer 25 | 0.69 → 0.79 | 0.57 → 0.59 | 0.54 → 0.45 | 0.60 → 0.53 |
+
+- **Recognition improved, not just refusal.** Harmful and benign prompts separate better inside the
+  fine-tuned model in every language, at every layer we compared (best layer: Hausa 0.82 → 0.89,
+  Igbo 0.80 → 0.85, Yoruba 0.75 → 0.80).
+- **What is left is what it still does not understand.** The harmful prompts it still deflects
+  (16-26 per language, down from 56-107) still look benign on the direction (0.45-0.59).
+- **The boundary is still blurrier than in English** (0.80-0.89 against 0.95), which fits the
+  remaining over-refusal of benign twins in these languages and is what the twins sweep targets.
+  The deflected-prompt counts are small, so treat those AUROCs as rough.
+
 ### 7.5 Capability check: no drop, and a second view of the gap
 
 Did the fine-tune hurt general ability in these languages?
@@ -261,9 +283,8 @@ reading and 200 AfriMMLU knowledge questions per language by log-likelihood (Aud
 - Code-mixed evaluation, by generating code-switched variants with TukaBench's published method.
 - More benign data in Hausa, Yoruba and Igbo, especially requests that share topics with harmful
   ones, to bring African-language over-refusal down to the English level.
-- A second training method (SafeGrad, circuit-restricted LoRA via CircuitKIT) and a re-run of the
-  notebook 03 test on the fine-tuned model, to see whether recognition of harm improved or only
-  the tendency to refuse.
+- A second training method (SafeGrad, circuit-restricted LoRA via CircuitKIT) to compare how much
+  recognition each method adds.
 - The same pipeline on Aya Expanse 8B, to see whether a larger model is unsafe where Tiny Aya is
   merely lost.
 

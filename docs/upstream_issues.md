@@ -100,3 +100,8 @@ With the patch, LISA trained Tiny Aya across two T4s in 13.4 minutes.
   include; `curatorkit[hygiene]` also pulls detoxify. Installing `detect-secrets` alone was enough.
 - **SafeTune LISA with an fp32 base on T4:** `device_map="auto"` fills GPU 0 first and leaves no room
   for activations; an fp16 base with `max_memory` per GPU works, with LoRA weights kept in fp32 by peft.
+- **CuratorKIT tests:** `tests/unit/test_hygiene.py` is skipped entirely when detect-secrets is not
+  installed. `TestSecretsGateRealDetection` calls `pytest.importorskip("detect_secrets")` in its class
+  body, which runs at import time and skips the whole module, so its 58 tests (mocked so they need no
+  hygiene packages) report as 1 skipped. Moving the call into a fixture or a `skipif` marker on that
+  class would let the rest run. Our test for PR #52 lives in its own file for this reason.
