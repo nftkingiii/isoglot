@@ -33,7 +33,10 @@ The approach, in four steps:
 - Fine-tuning on 944 curated rows with SafeTune's LISA **closes the refusal gap**: harmful-prompt
   refusal is now 84-88% in all four languages (Yoruba was 40%), with harmful compliance at 2-4%.
   It keeps English helpfulness close to the base model but over-refuses benign requests in the
-  African languages (35-39%). Telling harmful from benign in these languages is the open problem.
+  African languages (35-39%).
+- Adding benign "twins" of the harmful training prompts and shifting LISA toward benign steps buys
+  most of that back: at 30:10, over-refusal falls to 21-25% while harmful refusal stays at 73-86%,
+  better than steering on both counts in every language. Yoruba trades off most steeply.
 
 ## 2. Lexsi repositories used
 
@@ -83,6 +86,9 @@ steering strength is tuned on held-out English prompts, never on TukaBench.
 
 - [`NFTKING/isoglot-tiny-aya-lisa`](https://huggingface.co/NFTKING/isoglot-tiny-aya-lisa): Tiny Aya
   fine-tuned with SafeTune LISA on the Isoglot data, merged, fp16, with `lexsi_provenance.json`.
+- [`NFTKING/isoglot-tiny-aya-lisa-sweep-ft30-al10`](https://huggingface.co/NFTKING/isoglot-tiny-aya-lisa-sweep-ft30-al10)
+  and [`-sweep-ft36-al4`](https://huggingface.co/NFTKING/isoglot-tiny-aya-lisa-sweep-ft36-al4): the
+  same recipe with benign twins added, at two benign shares of LISA steps (section 7.4c).
 - English refusal directions for all 36 layers (`mechanism/english_refusal_directions.npz` in the
   dataset below).
 
@@ -93,9 +99,11 @@ The [`isoglot-runs`](https://huggingface.co/datasets/NFTKING/isoglot-runs) datas
 
 - `base/`, `steer/`, `harden/`: every model answer (1,200 per run) and every judge label with its
   reason, judge model, prompt hash and AuditKIT fingerprint.
+- `sweep-ft30-al10/`, `sweep-ft36-al4/`: the same for the two sweep models (Hausa, Yoruba and Igbo,
+  900 answers each).
 - `mechanism/`: per-layer separation tables and the plot below.
 - `traindata/`: 944 generated rows (raw) and the CuratorKIT exports, with manifest, dataset card,
-  rejected rows and checksums.
+  rejected rows and checksums; the 351 benign twins and the merged benign export (823 rows).
 
 ## 7. Experiments and findings
 
@@ -234,6 +242,42 @@ answers). Same layers, base → fine-tuned, AUROC:
   remaining over-refusal of benign twins in these languages and is what the twins sweep targets.
   The deflected-prompt counts are small, so treat those AUROCs as rough.
 
+### 7.4c Benign twins and a benign-share sweep
+
+Suggested by the Lexsi team after review. [`08_twins`](https://github.com/nftkingiii/isoglot/blob/main/notebooks/08_twins.ipynb) wrote a benign
+**twin** for each of the 120 harmful training seeds (a safe request on the same topic, e.g. "teach me
+to break into a car" → "I locked my keys in my car, how do I get back in safely?") with a helpful
+answer, in Hausa, Yoruba and Igbo: 351 rows, none close to a TukaBench prompt, $2.25. CuratorKIT
+merged them with the first benign rows (823 rows, 0 rejected).
+[`09_sweep`](https://github.com/nftkingiii/isoglot/blob/main/notebooks/09_sweep.ipynb) retrained with the twins at two benign shares of LISA steps
+(benign : safety = 30:10 and 36:4, against 20:20 before) and answered in Hausa, Yoruba and Igbo.
+
+![Safety vs over-refusal per language](https://raw.githubusercontent.com/nftkingiii/isoglot/main/docs/tradeoff/tradeoff.png)
+
+| Harmful refused / benign over-refused | Hausa | Igbo | Yoruba |
+|---|---|---|---|
+| Base | 65.6% / 22% | 54.6% / 14% | 39.7% / 11% |
+| Steering | 80.5% / 40% | 74.2% / 43% | 62.1% / 31% |
+| LISA 20:20 | 87.7% / 37% | 84.6% / 39% | 84.0% / 35% |
+| LISA + twins 30:10 | **85.6% / 21%** | **78.5% / 24%** | **72.8% / 25%** |
+| LISA + twins 36:4 | 73.2% / 13% | 67.0% / 15% | 43.6% / 9% |
+
+Harmful prompts jailbroken: 30:10 gives 3.6% / 5.1% / 2.1%, 36:4 gives 7.2% / 8.8% / 5.6% (Hausa / Igbo
+/ Yoruba; base 5.6% / 9.2% / 5.2%).
+
+- **The 30:10 setting beats steering on both axes in every language:** more harmful requests
+  refused and fewer benign ones over-refused.
+- **The twins buy back most of the over-refusal.** From 20:20 to 30:10, over-refusal falls 11-16
+  points in every language for a 2-11 point loss in harmful refusal; Hausa is back to the base
+  model's over-refusal (21% vs 22%) while refusing 20 points more harmful requests.
+- **At 36:4, Hausa and Igbo beat or match the base model on both axes** (Hausa 73% vs 66% refused
+  at 13% vs 22% over-refused; Igbo 67% vs 55% at 15% vs 14%), but jailbreaks drift back to base
+  levels. 30:10 is the most balanced setting.
+- **Yoruba's curve is the steepest.** At 36:4 it falls back near the base model (44% refused, 51%
+  deflected): with the least comprehension, Yoruba depends most on the safety steps.
+- Caveat: 20:20 had no twins and the two sweep runs have them, so the curve shows the twins and the
+  step share together. Judged in Hausa, Yoruba and Igbo only; 2 settings plus the earlier run.
+
 ### 7.5 Capability check: no drop, and a second view of the gap
 
 Did the fine-tune hurt general ability in these languages?
@@ -281,8 +325,9 @@ reading and 200 AfriMMLU knowledge questions per language by log-likelihood (Aud
 
 - Native-speaker validation of the judge and of the generated training data.
 - Code-mixed evaluation, by generating code-switched variants with TukaBench's published method.
-- More benign data in Hausa, Yoruba and Igbo, especially requests that share topics with harmful
-  ones, to bring African-language over-refusal down to the English level.
+- A fuller sweep that separates the twins from the step share, with more points between 30:10
+  and 36:4, and more benign data for Yoruba, whose trade-off is steepest.
+- The same fine-tune on human-written data (the Aya Dataset) instead of Claude-written rows.
 - A second training method (SafeGrad, circuit-restricted LoRA via CircuitKIT) to compare how much
   recognition each method adds.
 - The same pipeline on Aya Expanse 8B, to see whether a larger model is unsafe where Tiny Aya is
@@ -296,6 +341,7 @@ Solo project by [@NFTKING](https://huggingface.co/NFTKING).
 
 Everything runs from [github.com/nftkingiii/isoglot](https://github.com/nftkingiii/isoglot): notebooks
 01 (baseline answers), 02 (judge, any run), 03 (mechanism), 04 (steering), 05 (training data), 06
-(fine-tuning). Each runs on a free Kaggle session, uploads results chunk by chunk to the Hub and
-resumes if stopped. Total API spend: $15.43 (judging $4.01 + $3.72 + $3.32, training data $4.38).
+(fine-tuning), 07 (capability), 08 (benign twins), 09 (benign-share sweep). Each runs on a free
+Kaggle session, uploads results chunk by chunk to the Hub and resumes if stopped. Total API spend:
+$23.16 (judging $4.01 + $3.72 + $3.32 + $2.68 + $2.80, training data $4.38 + $2.25).
 GPU: free Kaggle T4 sessions.

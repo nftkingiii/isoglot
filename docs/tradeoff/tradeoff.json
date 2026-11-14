@@ -1,0 +1,120 @@
+{
+ "base": {
+  "eng": {
+   "harmful_refused": 0.7948717948717948,
+   "benign_over_refused": 0.1,
+   "n_harmful": 195,
+   "n_benign": 100
+  },
+  "hau": {
+   "harmful_refused": 0.6564102564102564,
+   "benign_over_refused": 0.22,
+   "n_harmful": 195,
+   "n_benign": 100
+  },
+  "yor": {
+   "harmful_refused": 0.39690721649484534,
+   "benign_over_refused": 0.11,
+   "n_harmful": 194,
+   "n_benign": 100
+  },
+  "ibo": {
+   "harmful_refused": 0.5459183673469388,
+   "benign_over_refused": 0.14,
+   "n_harmful": 196,
+   "n_benign": 100
+  }
+ },
+ "steer": {
+  "eng": {
+   "harmful_refused": 0.9230769230769231,
+   "benign_over_refused": 0.33,
+   "n_harmful": 195,
+   "n_benign": 100
+  },
+  "hau": {
+   "harmful_refused": 0.8051282051282052,
+   "benign_over_refused": 0.4,
+   "n_harmful": 195,
+   "n_benign": 100
+  },
+  "yor": {
+   "harmful_refused": 0.6205128205128205,
+   "benign_over_refused": 0.31,
+   "n_harmful": 195,
+   "n_benign": 100
+  },
+  "ibo": {
+   "harmful_refused": 0.7422680412371134,
+   "benign_over_refused": 0.43,
+   "n_harmful": 194,
+   "n_benign": 100
+  }
+ },
+ "harden": {
+  "eng": {
+   "harmful_refused": 0.882051282051282,
+   "benign_over_refused": 0.12,
+   "n_harmful": 195,
+   "n_benign": 100
+  },
+  "hau": {
+   "harmful_refused": 0.8769230769230769,
+   "benign_over_refused": 0.37,
+   "n_harmful": 195,
+   "n_benign": 100
+  },
+  "yor": {
+   "harmful_refused": 0.8402061855670103,
+   "benign_over_refused": 0.35353535353535354,
+   "n_harmful": 194,
+   "n_benign": 99
+  },
+  "ibo": {
+   "harmful_refused": 0.8461538461538461,
+   "benign_over_refused": 0.39,
+   "n_harmful": 195,
+   "n_benign": 100
+  }
+ },
+ "sweep-ft30-al10": {
+  "hau": {
+   "harmful_refused": 0.8564102564102564,
+   "benign_over_refused": 0.21,
+   "n_harmful": 195,
+   "n_benign": 100
+  },
+  "yor": {
+   "harmful_refused": 0.7282051282051282,
+   "benign_over_refused": 0.25,
+   "n_harmful": 195,
+   "n_benign": 100
+  },
+  "ibo": {
+   "harmful_refused": 0.7846153846153846,
+   "benign_over_refused": 0.24,
+   "n_harmful": 195,
+   "n_benign": 100
+  }
+ },
+ "sweep-ft36-al4": {
+  "hau": {
+   "harmful_refused": 0.7319587628865979,
+   "benign_over_refused": 0.13,
+   "n_harmful": 194,
+   "n_benign": 100
+  },
+  "yor": {
+   "harmful_refused": 0.4358974358974359,
+   "benign_over_refused": 0.09,
+   "n_harmful": 195,
+   "n_benign": 100
+  },
+  "ibo": {
+   "harmful_refused": 0.6701030927835051,
+   "benign_over_refused": 0.15,
+   "n_harmful": 194,
+   "n_benign": 100
+  }
+ }
+}

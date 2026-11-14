@@ -27,8 +27,12 @@ Hackathon, Track 2a, *Multilingual and code-mixed safety*.
 3. **Steering confirms the prediction; fine-tuning closes the gap.** Refusal steering cuts harmful
    compliance about threefold but triples over-refusal and leaves Yoruba 30 points behind
    English. Fine-tuning with SafeTune's LISA on 944 curated rows brings harmful-request refusal to
-   84-88% in all four languages, keeps English over-refusal near the base model, and leaves
-   over-refusal in the African languages (35-39%) as the open problem.
+   84-88% in all four languages and keeps English over-refusal near the base model, but
+   over-refuses benign requests in the African languages (35-39%).
+4. **Benign twins trade that back.** Adding a safe "twin" for each harmful training request and
+   more benign training steps cuts African-language over-refusal to 21-25% while still refusing
+   73-86% of harmful requests, beating steering on both axes in every language. A sweep traces
+   the full trade-off curve per language.
 
 ## Results
 
@@ -98,6 +102,42 @@ English: calibrating on easy harmless prompts hides the price of steering.
   2 epochs, lr 1e-4, rho 0.1, 20/20 alignment/fine-tune steps, base in fp16 across two T4s,
   13.4 minutes.
 
+### Benign twins and a benign-share sweep
+
+Suggested by the Lexsi team after review. [`08_twins`](notebooks/08_twins.ipynb) wrote a benign
+**twin** for each of the 120 harmful training seeds (a safe request on the same topic, e.g. "teach me
+to break into a car" → "I locked my keys in my car, how do I get back in safely?") with a helpful
+answer, in Hausa, Yoruba and Igbo: 351 rows, none close to a TukaBench prompt, $2.25. CuratorKIT
+merged them with the first benign rows (823 rows, 0 rejected).
+[`09_sweep`](notebooks/09_sweep.ipynb) retrained with the twins at two benign shares of LISA steps
+(benign : safety = 30:10 and 36:4, against 20:20 before) and answered in Hausa, Yoruba and Igbo.
+
+![Safety vs over-refusal per language](docs/tradeoff/tradeoff.png)
+
+| Harmful refused / benign over-refused | Hausa | Igbo | Yoruba |
+|---|---|---|---|
+| Base | 65.6% / 22% | 54.6% / 14% | 39.7% / 11% |
+| Steering | 80.5% / 40% | 74.2% / 43% | 62.1% / 31% |
+| LISA 20:20 | 87.7% / 37% | 84.6% / 39% | 84.0% / 35% |
+| LISA + twins 30:10 | **85.6% / 21%** | **78.5% / 24%** | **72.8% / 25%** |
+| LISA + twins 36:4 | 73.2% / 13% | 67.0% / 15% | 43.6% / 9% |
+
+Harmful prompts jailbroken: 30:10 gives 3.6% / 5.1% / 2.1%, 36:4 gives 7.2% / 8.8% / 5.6% (Hausa / Igbo
+/ Yoruba; base 5.6% / 9.2% / 5.2%).
+
+- **The 30:10 setting beats steering on both axes in every language:** more harmful requests
+  refused and fewer benign ones over-refused.
+- **The twins buy back most of the over-refusal.** From 20:20 to 30:10, over-refusal falls 11-16
+  points in every language for a 2-11 point loss in harmful refusal; Hausa is back to the base
+  model's over-refusal (21% vs 22%) while refusing 20 points more harmful requests.
+- **At 36:4, Hausa and Igbo beat or match the base model on both axes** (Hausa 73% vs 66% refused
+  at 13% vs 22% over-refused; Igbo 67% vs 55% at 15% vs 14%), but jailbreaks drift back to base
+  levels. 30:10 is the most balanced setting.
+- **Yoruba's curve is the steepest.** At 36:4 it falls back near the base model (44% refused, 51%
+  deflected): with the least comprehension, Yoruba depends most on the safety steps.
+- Caveat: 20:20 had no twins and the two sweep runs have them, so the curve shows the twins and the
+  step share together. Judged in Hausa, Yoruba and Igbo only; 2 settings plus the earlier run.
+
 ### Did the fine-tune teach recognition, or only refusal?
 
 [`03_mechanism`](notebooks/03_mechanism.ipynb) re-run on the fine-tuned model (`VARIANT = "harden"`;
@@ -155,8 +195,8 @@ reading and 200 AfriMMLU knowledge questions per language by log-likelihood (Aud
   prompt calls every request "harmful", including benign twins; kept verbatim for consistency.
 - **No native-speaker validation yet** of the judge or of the generated training data.
 - **Code-mixed prompts not evaluated:** TukaBench's code-switched set is not public.
-- **One training data source** (Claude-written) and one benign share; a sweep and an Aya Dataset
-  comparison are the next experiments.
+- **One training data source** (Claude-written); an Aya Dataset comparison is the next experiment.
+  The sweep has three points and changes twins and step share together.
 - **Licenses:** Tiny Aya is CC BY-NC 4.0, so the fine-tune is a research artifact.
 
 ## Pipeline
@@ -170,9 +210,12 @@ reading and 200 AfriMMLU knowledge questions per language by log-likelihood (Aud
 | [`05_traindata`](notebooks/05_traindata.ipynb) | Seeds, decontamination, Claude-written rows, CuratorKIT | Kaggle CPU | ~100 min | $4.38 |
 | [`06_harden`](notebooks/06_harden.ipynb) | SafeTune LISA fine-tune, push, answer TukaBench | Kaggle T4 ×2 | 71 min | $0 |
 | [`07_capability`](notebooks/07_capability.ipynb) | Belebele + AfriMMLU before/after | Kaggle T4 | 21 min | $0 |
+| [`08_twins`](notebooks/08_twins.ipynb) | Benign twins in Hausa, Yoruba, Igbo; CuratorKIT merge | Kaggle CPU | 56 min | $2.25 |
+| [`09_sweep`](notebooks/09_sweep.ipynb) | LISA with twins at a set benign share, answer hau/yor/ibo | Kaggle T4 ×2 | ~77 min | $0 |
 
 Every notebook uploads results chunk by chunk to the Hub and resumes if stopped. Total API spend
-across the study: $15.43.
+across the study: $23.16. [`scripts/tradeoff.py`](scripts/tradeoff.py) redraws the trade-off plot
+from the public judged answers.
 
 ```
 src/isoglot/
