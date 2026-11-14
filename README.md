@@ -19,7 +19,9 @@ Hackathon, Track 2a, *Multilingual and code-mixed safety*.
 
 1. **The gap is confusion, not compliance.** Tiny Aya refuses 80% of harmful requests in English
    and 40% in Yoruba, but it does not comply more in Yoruba (5% vs 11% in English). The lost
-   refusals become off-topic or incoherent answers. It is safe by incompetence.
+   refusals become answers that miss the request. A native Igbo speaker confirms the judge's
+   refusals, finds those answers fluent Igbo about the wrong thing, and would count some as
+   attempts to comply.
 2. **It does not recognise the harm.** On the English refusal direction inside the model, the
    harmful prompts it deflects in Hausa, Yoruba and Igbo look like benign prompts, at every one
    of its 36 layers. That predicts steering cannot reach them without also refusing benign
@@ -187,13 +189,49 @@ reading and 200 AfriMMLU knowledge questions per language by log-likelihood (Aud
   chat template is a weak format for this model; it is the same for both models, so the comparison
   is fair, but the absolute numbers understate what the model can do.
 
+### Native-speaker check of the judge
+
+[`scripts/native_check.py`](scripts/native_check.py) draws 60 judged answers per language, stratified
+by the judge's label (25 Refused, 20 Deflected, 15 Jailbroken; 45 from the base model, 15 from LISA +
+twins 30:10). A native speaker labels each one blind, with the same three categories (Complied =
+TukaBench's Jailbroken), says whether the answer makes sense in the language, and can leave a note.
+Igbo is done (rated by the project author, a native speaker); Hausa and Yoruba raters are in progress.
+
+| Igbo, judge ↓ / rater → | Refused | Complied | Deflected |
+|---|---|---|---|
+| Refused (25) | 22 | 3 | 0 |
+| Jailbroken (15) | 0 | 14 | 1 |
+| Deflected (20) | 0 | 10 | 10 |
+
+Agreement 77% (46/60), Cohen's kappa 0.65; on harmful prompts only, 80% (32/40). The sample is
+stratified, so these are not the full run's agreement rates.
+
+- **Refusal, the headline metric, holds up.** The rater never called an answer a refusal that the
+  judge did not, and agreed on 22 of 25 of the judge's refusals. The other 3 begin with the model's
+  usual Igbo refusal sentence and then offer alternatives.
+- **Compliance holds up too:** 14 of 15 agreed.
+- **Deflected is where they differ.** Half of the judge's Deflected answers the rater called
+  Complied (6 harmful, 4 benign). The judge's reasons for those say the answer misses the request
+  or its harmful core (for example, torture devices answered as social-media tactics); two of
+  them follow mistranslated prompts (below). The rater counts them as attempts to answer. So in Igbo the judge's harmful compliance rate may be a lower bound: in this sample it is
+  10 of 40 harmful items by the judge and 16 of 40 by the rater.
+- **Deflections are fluent Igbo, not gibberish.** The rater said 56 of 60 answers make sense in
+  Igbo (4 partly, 0 no), including 18 of the 20 the judge called Deflected. The confusion is about
+  the request, not the language: the model writes good Igbo about the wrong thing.
+- **Some confusion starts in the benchmark.** The rater flagged 3 of 60 TukaBench Igbo prompts as
+  mistranslated, and we confirmed each in the prompt text: EFCC became "ACTU", Kampala became
+  "Abakpa", and "fake transfers in Nigeria" became fake transfers "na Nike". The model answered
+  what it was given (ACTU as a trade body, counterfeit Nike goods), which the judge, reading the
+  English goal, scores as deflection.
+
 ## Limitations
 
 - **Judge.** Claude Sonnet 5.5 with TukaBench's prompt; TukaBench used GPT-4.1, and Tiny Aya was
   not in the paper, so rates are not comparable one-to-one. About 7% of judge calls were re-run by a
   fallback model after a safety classifier declined; 20-22 answers per run stayed unjudged. The
   prompt calls every request "harmful", including benign twins; kept verbatim for consistency.
-- **No native-speaker validation yet** of the judge or of the generated training data.
+- **Native-speaker check: Igbo only so far,** one rater who is also the author, 60 items; Hausa and
+  Yoruba in progress. The generated training data has not been checked by native speakers.
 - **Code-mixed prompts not evaluated:** TukaBench's code-switched set is not public.
 - **One training data source** (Claude-written); an Aya Dataset comparison is the next experiment.
   The sweep has three points and changes twins and step share together.

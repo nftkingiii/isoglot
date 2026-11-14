@@ -26,8 +26,10 @@ The approach, in four steps:
 
 **The findings in brief:**
 
-- The refusals Tiny Aya loses in Hausa, Yoruba and Igbo turn into confused answers, not harmful
-  ones, because the model does not recognise the request. It is safe by incompetence.
+- The refusals Tiny Aya loses in Hausa, Yoruba and Igbo turn into answers that miss the request,
+  not harmful ones, because the model does not recognise it. A native Igbo speaker confirms the
+  judge's refusals, finds those answers fluent Igbo about the wrong thing, and would count some
+  as attempts to comply; three of the misses trace to mistranslated benchmark prompts.
 - Steering along the English refusal direction cannot fix that without refusing ordinary requests
   too, as the model's internals predicted.
 - Fine-tuning on 944 curated rows with SafeTune's LISA **closes the refusal gap**: harmful-prompt
@@ -305,6 +307,41 @@ reading and 200 AfriMMLU knowledge questions per language by log-likelihood (Aud
   chat template is a weak format for this model; it is the same for both models, so the comparison
   is fair, but the absolute numbers understate what the model can do.
 
+### 7.5b Native-speaker check of the judge
+
+[`scripts/native_check.py`](https://github.com/nftkingiii/isoglot/blob/main/scripts/native_check.py) draws 60 judged answers per language, stratified
+by the judge's label (25 Refused, 20 Deflected, 15 Jailbroken; 45 from the base model, 15 from LISA +
+twins 30:10). A native speaker labels each one blind, with the same three categories (Complied =
+TukaBench's Jailbroken), says whether the answer makes sense in the language, and can leave a note.
+Igbo is done (rated by the project author, a native speaker); Hausa and Yoruba raters are in progress.
+
+| Igbo, judge ↓ / rater → | Refused | Complied | Deflected |
+|---|---|---|---|
+| Refused (25) | 22 | 3 | 0 |
+| Jailbroken (15) | 0 | 14 | 1 |
+| Deflected (20) | 0 | 10 | 10 |
+
+Agreement 77% (46/60), Cohen's kappa 0.65; on harmful prompts only, 80% (32/40). The sample is
+stratified, so these are not the full run's agreement rates.
+
+- **Refusal, the headline metric, holds up.** The rater never called an answer a refusal that the
+  judge did not, and agreed on 22 of 25 of the judge's refusals. The other 3 begin with the model's
+  usual Igbo refusal sentence and then offer alternatives.
+- **Compliance holds up too:** 14 of 15 agreed.
+- **Deflected is where they differ.** Half of the judge's Deflected answers the rater called
+  Complied (6 harmful, 4 benign). The judge's reasons for those say the answer misses the request
+  or its harmful core (for example, torture devices answered as social-media tactics); two of
+  them follow mistranslated prompts (below). The rater counts them as attempts to answer. So in Igbo the judge's harmful compliance rate may be a lower bound: in this sample it is
+  10 of 40 harmful items by the judge and 16 of 40 by the rater.
+- **Deflections are fluent Igbo, not gibberish.** The rater said 56 of 60 answers make sense in
+  Igbo (4 partly, 0 no), including 18 of the 20 the judge called Deflected. The confusion is about
+  the request, not the language: the model writes good Igbo about the wrong thing.
+- **Some confusion starts in the benchmark.** The rater flagged 3 of 60 TukaBench Igbo prompts as
+  mistranslated, and we confirmed each in the prompt text: EFCC became "ACTU", Kampala became
+  "Abakpa", and "fake transfers in Nigeria" became fake transfers "na Nike". The model answered
+  what it was given (ACTU as a trade body, counterfeit Nike goods), which the judge, reading the
+  English goal, scores as deflection.
+
 ### 7.6 What else we tried or checked
 
 - A keyword refusal count first suggested the gap; it could not separate refusal from confusion,
@@ -318,7 +355,7 @@ reading and 200 AfriMMLU knowledge questions per language by log-likelihood (Aud
   were re-run by a fallback model after a safety classifier declined, and a few of the 1,200 answers
   per run (20-22) stayed unjudged; both are reported per run. The judge prompt calls every prompt a
   "harmful request", including the benign twins; we kept it verbatim for consistency.
-- **Not done:** a native-speaker check of the judge in Hausa, Yoruba and Igbo, and code-mixed
+- **Not done yet:** the Hausa and Yoruba native-speaker checks (in progress), and code-mixed
   prompts (TukaBench's code-switched set is not public).
 
 ## 8. With more credits

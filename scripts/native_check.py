@@ -185,6 +185,7 @@ def read_filled(path: Path) -> dict[int, dict]:
     for row in ws.iter_rows(min_row=2, values_only=True):
         if not row or row[0] is None:
             continue
+        row = tuple(row) + (None,) * (7 - len(row))  # trailing empty cells may be dropped
         label = (str(row[4]).strip().capitalize() if row[4] else "")
         sense = (str(row[5]).strip().capitalize() if row[5] else "")
         if label in FROM_RATER:
