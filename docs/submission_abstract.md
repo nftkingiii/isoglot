@@ -14,6 +14,6 @@ After Lexsi's review we added 351 benign twins of the harmful training prompts a
 
 A native-speaker check (Igbo done, Hausa and Yoruba in progress) agrees with the judge on refusals (kappa 0.65 overall), finds the deflections fluent Igbo about the wrong thing, would count some as attempts to comply, and traced three misses to mistranslated benchmark prompts.
 
-We found and fixed issues in the stack: AuditKIT's cache cannot see model state, so a steered model replayed unsteered answers; SafeTune's LISA cannot train a model split across GPUs. Both are fixed here, tested and reported to Lexsi; two smaller fixes went upstream as pull requests (SafeTune #85, CuratorKIT #52).
+We found and fixed issues in the stack: AuditKIT's cache cannot see model state, so a steered model replayed unsteered answers; SafeTune's LISA cannot train a model split across GPUs. Both are fixed here, tested and reported to Lexsi; two smaller fixes were merged upstream (SafeTune #85, CuratorKIT #52).
 
 Everything is reproducible from nine resumable Kaggle notebooks on free T4s, with models, answers, judge labels, training data and plots on Hugging Face. Total API spend: $23.16.
