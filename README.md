@@ -292,6 +292,7 @@ Issues found while building Isoglot, reported to Lexsi with repros and fixes
 | SafeTune | LISA cannot train a model split across GPUs | Reported; patched here (`isoglot/patches.py`, tested) |
 | SafeTune | Kaggle needs torchao uninstalled before LoRA training | [PR #85](https://github.com/Lexsi-Labs/SafeTune/pull/85), merged, released in 0.1.19 |
 | CuratorKIT | SecretsGate needs only `detect-secrets`, not the full hygiene extra | [PR #52](https://github.com/Lexsi-Labs/CuratorKIT/pull/52), merged with its test, released in 0.1.28 |
+| CuratorKIT | `test_hygiene.py` was skipped whole in CI; 53 mocked tests now run | [PR #56](https://github.com/Lexsi-Labs/CuratorKIT/pull/56), merged, released in 0.1.29 |
 
 ## Data and licenses
 
